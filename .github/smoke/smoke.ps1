@@ -135,7 +135,13 @@ try {
     $bytes = [IO.File]::ReadAllBytes((Join-Path $tampered $Archive))
     $bytes[100] = $bytes[100] -bxor 0xFF
     [IO.File]::WriteAllBytes((Join-Path $tampered $Archive), $bytes)
+    # install.ps1 keeps an install whose version already runs without downloading the archive (Windows cannot
+    # replace a running momentry.exe), so the tampered archive is tried in a fresh profile, where it must be read.
+    Use-Profile 'tampered'
     if ((Install-From $tampered) -eq 0) { Fail "install.ps1 accepted a tampered $Archive" }
+    if (Test-Path -LiteralPath (Join-Path $MDir 'current')) { Fail 'a refused install wrote current' }
+    if (Test-Path -LiteralPath (Join-Path $MDir "versions\$Tag")) { Fail 'a refused install left a version dir' }
+    Use-Profile 'main'
     if ((Get-Current) -ne $Tag) { Fail 'current changed after a refused install' }
     if ((Get-TreeDigest $vdir) -ne $before) { Fail "a refused install changed $vdir" }
 
