@@ -95,6 +95,12 @@ try {
     Use-Profile 'main'
     if ((Install-From $Assets) -ne 0) { Fail 'install.ps1 failed' }
     Assert-Version $Tag
+    # PowerShell runs momentry.cmd with cmd /c: the shim must pass a non-zero exit code on
+    $ErrorActionPreference = 'Continue'
+    & $Shim no-such-command 2>$null | Out-Null
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = 'Stop'
+    if ($code -ne 2) { Fail "momentry.cmd exited $code for an unknown command, want 2" }
     $vdir = Join-Path $MDir "versions\$Tag"
     if ((Get-Current) -ne $Tag) { Fail "current is not $Tag" }
 
