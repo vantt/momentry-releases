@@ -114,7 +114,8 @@ try {
 
     Step 'doctor --json'
     Initialize-Repo
-    $doctor = (& $Shim doctor --json) -join "`n" | ConvertFrom-Json
+    Push-Location $RepoDir
+    try { $doctor = (& $Shim doctor --json) -join "`n" | ConvertFrom-Json } finally { Pop-Location }
     if ($doctor.schema -ne 1) { Fail 'doctor --json: schema is not 1' }
     if ($doctor.ok -ne $true) {
         $doctor.data.checks | Where-Object { $_.status -ne 'ok' } | ForEach-Object { Write-Host "$($_.code): $($_.status) $($_.detail)" }

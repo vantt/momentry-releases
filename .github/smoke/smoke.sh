@@ -84,7 +84,7 @@ jq -r '.files[] | .sha256 + "  " + .path' "$VDIR/BUILD" > "$WORK/sums"
 
 step "doctor --json"
 init_repo
-"$BIN" doctor --json > "$WORK/doctor.json" || true
+(cd "$HOME/repo" && "$BIN" doctor --json) > "$WORK/doctor.json" || true
 jq -e '.schema == 1' "$WORK/doctor.json" >/dev/null || fail "doctor --json: schema is not 1"
 jq -e '.ok == true' "$WORK/doctor.json" >/dev/null || {
   jq -r '.data.checks[]? | select(.status != "ok") | "\(.code): \(.status) \(.detail)"' "$WORK/doctor.json" >&2
